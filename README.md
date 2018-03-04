@@ -22,23 +22,24 @@ services:
     environment:
       - MAIL_DOMAIN=example.com
       - MAIL_USERS_FILE=/run/secrets/mail_users
+      - CERTS_CRT_FILE=/run/secrets/mail_crt
+      - CERTS_KEY_FILE=/run/secrets/mail_key
     volumes:
-      - ./config/certs:/etc/postfix/certs
       - ./config/virtual:/etc/postfix/virtual
     ports:
       - "25:25"
       - "587:587"
     secrets:
       - mail_users
+      - mail_crt
+      - mail_key
 
 secrets:
   mail_users:
-	external: true
-  cert:
-	external: true
-  key:
-	external: true
-  pem:
+    external: true
+  mail_crt:
+    external: true
+  mail_key:
     external: true
 ```
 
