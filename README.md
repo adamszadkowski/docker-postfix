@@ -1,44 +1,46 @@
 docker-postfix
 ==============
 
+This is a fork from [catatnight/docker-postfix](https://github.com/catatnight/docker-postfix).
+
 run postfix with smtp authentication (sasldb) in a docker container.
 TLS and OpenDKIM support are optional.
 
 ## Requirement
 + Docker 1.0
 
-## Installation
-1. Build image
-
-	```bash
-	$ sudo docker pull catatnight/postfix
-	```
-
 ## Usage
-1. Create postfix container with smtp authentication
 
-	```bash
-	$ sudo docker run -p 25:25 \
-			-e maildomain=mail.example.com -e smtp_user=user:pwd \
-			--name postfix -d catatnight/postfix
-	# Set multiple user credentials: -e smtp_user=user1:pwd1,user2:pwd2,...,userN:pwdN
-	```
-2. Enable OpenDKIM: save your domain key ```.private``` in ```/path/to/domainkeys```
+Example docker-compose.yml
 
-	```bash
-	$ sudo docker run -p 25:25 \
-			-e maildomain=mail.example.com -e smtp_user=user:pwd \
-			-v /path/to/domainkeys:/etc/opendkim/domainkeys \
-			--name postfix -d catatnight/postfix
-	```
-3. Enable TLS(587): save your SSL certificates ```.key``` and ```.crt``` to  ```/path/to/certs```
+```yaml
+version: '3.1'
 
-	```bash
-	$ sudo docker run -p 587:587 \
-			-e maildomain=mail.example.com -e smtp_user=user:pwd \
-			-v /path/to/certs:/etc/postfix/certs \
-			--name postfix -d catatnight/postfix
-	```
+services:
+  postfix:
+    image: klyman/postfix:0.1
+    environment:
+      - MAIL_DOMAIN=example.com
+      - MAIL_USERS_FILE=/run/secrets/mail_users
+    volumes:
+      - ./config/certs:/etc/postfix/certs
+      - ./config/virtual:/etc/postfix/virtual
+    ports:
+      - "25:25"
+      - "587:587"
+    secrets:
+      - mail_users
+
+secrets:
+  mail_users:
+	external: true
+  cert:
+	external: true
+  key:
+	external: true
+  pem:
+    external: true
+```
 
 ## Note
 + Login credential should be set to (`username@mail.example.com`, `password`) in Smtp Client
