@@ -57,6 +57,7 @@ if [[ -n "$CERTS_CRT_FILE" && -n "$CERTS_KEY_FILE" && -f "$CERTS_CRT_FILE" && -f
   # /etc/postfix/main.cf
   postconf -e smtpd_tls_cert_file=$CERTS_CRT_FILE
   postconf -e smtpd_tls_key_file=$CERTS_KEY_FILE
+  postconf -e smtp_tls_security_level=encrypt
   chmod 400 $CERTS_CRT_FILE $CERTS_KEY_FILE
   # /etc/postfix/master.cf
   postconf -M submission/inet="submission   inet   n   -   n   -   -   smtpd"
