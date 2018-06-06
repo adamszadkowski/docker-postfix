@@ -26,6 +26,9 @@ service postfix start
 tail -f /var/log/mail.log
 EOF
 chmod +x /opt/postfix.sh
+
+MAIL_DOMAIN=$(echo $MAIL_DOMAINS | awk -F ',' '{ print $1 }')
+
 postconf -e myhostname=$MAIL_DOMAIN
 postconf -F '*/*/chroot = n'
 
@@ -45,8 +48,8 @@ auxprop_plugin: sasldb
 mech_list: PLAIN LOGIN CRAM-MD5 DIGEST-MD5 NTLM
 EOF
 # sasldb2
-while IFS=':' read -r _user _pwd; do
-  echo $_pwd | saslpasswd2 -p -c -u $MAIL_DOMAIN $_user
+while IFS=':' read -r _user _domain _pwd; do
+  echo $_pwd | saslpasswd2 -p -c -u $_domain $_user
 done < "$MAIL_USERS_FILE"
 chown postfix.sasl /etc/sasldb2
 
@@ -73,7 +76,7 @@ fi
 #############
 
 if [[ -f /etc/postfix/virtual ]]; then
-  postconf -e virtual_alias_domains=$MAIL_DOMAIN
+  postconf -e virtual_alias_domains=$MAIL_DOMAINS
   postconf -e virtual_alias_maps=hash:/etc/postfix/virtual
   postmap /etc/postfix/virtual
 fi
