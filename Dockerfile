@@ -6,6 +6,7 @@ ENV DEBIAN_FRONTEND="noninteractive"
 
 RUN apt-get update && apt-get install -y \
     supervisor \
+    rsyslog \
     postfix \
     sasl2-bin \
     opendkim \

@@ -11,21 +11,17 @@ cat > /etc/supervisor/conf.d/supervisord.conf <<EOF
 nodaemon=true
 
 [program:postfix]
-command=/opt/postfix.sh
+command=/usr/lib/postfix/sbin/master -c /etc/postfix/ -d
 
 [program:rsyslog]
-command=/usr/sbin/rsyslogd -n -c3
-EOF
+command=/usr/sbin/rsyslogd -n
 
-############
-#  postfix
-############
-cat >> /opt/postfix.sh <<EOF
-#!/bin/bash
-service postfix start
-tail -f /var/log/mail.log
+[program:readlog]
+command=/usr/bin/tail -F /var/log/mail.log
+stdout_logfile=/dev/fd/1
+stdout_logfile_maxbytes=0
+
 EOF
-chmod +x /opt/postfix.sh
 
 MAIL_DOMAIN=$(echo $MAIL_DOMAINS | awk -F ',' '{ print $1 }')
 
