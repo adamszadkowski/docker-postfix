@@ -14,25 +14,42 @@ TLS and OpenDKIM support are optional.
 Example docker-compose.yml
 
 ```yaml
-version: '3.1'
+version: '3.7'
 
 services:
   postfix:
-    image: klyman/postfix:0.1
+    image: klyman/postfix:0.4
     environment:
       - MAIL_DOMAIN=example.com
       - MAIL_USERS_FILE=/run/secrets/mail_users
       - CERTS_CRT_FILE=/run/secrets/mail_crt
       - CERTS_KEY_FILE=/run/secrets/mail_key
-    volumes:
-      - ./config/virtual:/etc/postfix/virtual
+      - CONNECTION_AUTH_LIMIT_RATE=3
+      - ANVIL_RATE_TIME_UNIT=1d
+    configs:
+      - source: virtual_addresses
+        target: /etc/postfix/virtual
+      - source: access_control
+        target: /etc/postfix/access
     ports:
-      - "25:25"
-      - "587:587"
+      - target: 25
+        published: 25
+        protocol: tcp
+        mode: host
+      - target: 587
+        published: 587
+        protocol: tcp
+        mode: host
     secrets:
       - mail_users
       - mail_crt
       - mail_key
+
+configs:
+  virtual_addresses:
+    file: ./config/virtual
+  access_control:
+    file: ./config/access
 
 secrets:
   mail_users:

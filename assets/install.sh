@@ -54,6 +54,7 @@ chown postfix.sasl /etc/sasldb2
 ############
 if [[ -n "$CERTS_CRT_FILE" && -n "$CERTS_KEY_FILE" && -f "$CERTS_CRT_FILE" && -f "$CERTS_KEY_FILE" ]]; then
   # /etc/postfix/main.cf
+  postconf -e smtpd_tls_auth_only=yes
   postconf -e smtpd_tls_cert_file=$CERTS_CRT_FILE
   postconf -e smtpd_tls_key_file=$CERTS_KEY_FILE
   postconf -e smtp_tls_security_level=encrypt
@@ -75,6 +76,29 @@ if [[ -f /etc/postfix/virtual ]]; then
   postconf -e virtual_alias_domains=$MAIL_DOMAINS
   postconf -e virtual_alias_maps=hash:/etc/postfix/virtual
   postmap /etc/postfix/virtual
+fi
+
+#############
+# Access control
+#############
+
+if [[ -f /etc/postfix/access ]]; then
+  postconf -e "smtpd_helo_required=yes"
+  postconf -e "smtpd_delay_reject=no"
+  postconf -e "smtpd_client_restrictions=check_client_access hash:/etc/postfix/access,reject_invalid_hostname,reject_unauth_pipelining,permit_mynetworks,reject_unauth_destination,permit"
+  postmap /etc/postfix/access
+fi
+
+#############
+# Limits
+#############
+
+if [[ -n "$CONNECTION_AUTH_LIMIT_RATE" ]]; then
+  postconf -e smtpd_client_auth_rate_limit=$CONNECTION_AUTH_LIMIT_RATE
+fi
+
+if [[ -n "$ANVIL_RATE_TIME_UNIT" ]]; then
+  postconf -e anvil_rate_time_unit=$ANVIL_RATE_TIME_UNIT
 fi
 
 #############
